@@ -300,9 +300,9 @@ This project is provided as-is for educational and commercial use.
 For issues or questions, please refer to the code comments or Salesforce documentation.
 
 ## Future Enhancements
+- [x] Automated dependency discovery (hierarchy, shared account, product-based rules)
+- [x] Bulk dependency creation tool (discovery preview modal with select/deselect and bulk attribute editing)
 - [ ] Export dependency tree to PDF/Image
-- [ ] Bulk dependency creation tool
 - [ ] Historical dependency tracking
 - [ ] Integration with Service Cloud for incident management
-- [ ] Automated dependency discovery
 - [ ] GraphQL-style dependency queries
