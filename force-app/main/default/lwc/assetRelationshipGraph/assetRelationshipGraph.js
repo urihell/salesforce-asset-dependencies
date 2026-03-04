@@ -8,6 +8,8 @@ import expandNode from '@salesforce/apex/AssetGraphController.expandNode';
 import createDependency from '@salesforce/apex/AssetDependencyController.createDependency';
 import deleteDependency from '@salesforce/apex/AssetDependencyController.deleteDependency';
 import searchAssets from '@salesforce/apex/AssetDependencyController.searchAssets';
+import previewDependencies from '@salesforce/apex/AssetDependencyController.previewDependencies';
+import createDiscoveredDependencies from '@salesforce/apex/AssetDependencyController.createDiscoveredDependencies';
 import searchAssetsForNav from '@salesforce/apex/AssetGraphController.searchAssetsForNav';
 import getContainmentHierarchy from '@salesforce/apex/AssetGraphController.getContainmentHierarchy';
 
@@ -46,6 +48,15 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
     relationshipCategory = '';
     dependencyStrength = '';
     isCreating = false;
+    isDiscovering = false;
+
+    showDiscoveryModal = false;
+    discoveredDependencies = [];
+    discoverySkipped = 0;
+    bulkDependencyType = '';
+    bulkCategory = '';
+    bulkStrength = '';
+    bulkImpact = '';
 
     navSearchTerm = '';
     navSearchResults = [];
@@ -79,6 +90,24 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
         if (!this._hasMeasured) {
             this._measureNodeSize();
         }
+        this._updateBaseScale();
+        if (this._needsCenter) {
+            this._needsCenter = false;
+            this._centerGraphInViewport();
+        }
+    }
+
+    _baseScale = 1;
+
+    _updateBaseScale() {
+        const wrapper = this.template.querySelector('.canvas-wrapper');
+        if (!wrapper) return;
+        const wrapperWidth = wrapper.clientWidth;
+        if (wrapperWidth > 0 && wrapperWidth < 1400) {
+            this._baseScale = wrapperWidth / 1400;
+        } else {
+            this._baseScale = 1;
+        }
     }
 
     /**
@@ -110,6 +139,7 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
                         edges: data.edges.map(edge => ({ ...edge }))
                     };
                     this.processGraphLayout();
+                    this._needsCenter = true;
                     this._hasMeasured = false; // re-measure after new nodes render
                     this.error = null;
                 } else {
@@ -481,7 +511,12 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
     }
 
     get canvasStyle() {
-        return `transform: translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel});`;
+        const scale = this._baseScale * this.zoomLevel;
+        return `transform: translate(${this.panX}px, ${this.panY}px) scale(${scale});`;
+    }
+
+    get canvasWrapperStyle() {
+        return `height: ${700 * this._baseScale}px;`;
     }
 
     get zoomClass() {
@@ -569,10 +604,69 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
     }
 
     handleResetView() {
-        this.zoomLevel = 1;
-        this.panX = 0;
-        this.panY = 0;
         this.viewLens = 'normal';
+        this._fitAndCenterGraph();
+    }
+
+    _centerGraphInViewport() {
+        this._fitAndCenterGraph();
+    }
+
+    _fitAndCenterGraph() {
+        const nodes = this.graphData?.nodes;
+        if (!nodes || nodes.length === 0) {
+            this.zoomLevel = 1;
+            this.panX = 0;
+            this.panY = 0;
+            return;
+        }
+
+        // Node half-dimensions for bounding box padding
+        const nodeW = 160;
+        const nodeH = 64;
+
+        // Compute bounding box of all nodes (including node dimensions)
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const node of nodes) {
+            const nx = node.x || 0;
+            const ny = node.y || 0;
+            if (nx - nodeW / 2 < minX) minX = nx - nodeW / 2;
+            if (nx + nodeW / 2 > maxX) maxX = nx + nodeW / 2;
+            if (ny - nodeH / 2 < minY) minY = ny - nodeH / 2;
+            if (ny + nodeH / 2 > maxY) maxY = ny + nodeH / 2;
+        }
+
+        const contentW = maxX - minX;
+        const contentH = maxY - minY;
+        const contentCenterX = (minX + maxX) / 2;
+        const contentCenterY = (minY + maxY) / 2;
+
+        // Measure the visible wrapper dimensions
+        const wrapper = this.template.querySelector('.canvas-wrapper');
+        const wrapperW = wrapper ? wrapper.clientWidth : 1400;
+        const wrapperH = wrapper ? wrapper.clientHeight : 700 * this._baseScale;
+
+        // Padding around the content (percentage of viewport)
+        const padding = 0.15;
+        const availW = wrapperW * (1 - padding * 2);
+        const availH = wrapperH * (1 - padding * 2);
+
+        // Compute zoom to fit content in viewport
+        // The total scale = _baseScale * zoomLevel, so zoomLevel = desiredScale / _baseScale
+        let fitZoom = 1;
+        if (contentW > 0 && contentH > 0) {
+            const scaleToFitW = availW / (contentW * this._baseScale);
+            const scaleToFitH = availH / (contentH * this._baseScale);
+            fitZoom = Math.min(scaleToFitW, scaleToFitH);
+        }
+
+        // Clamp zoom to reasonable bounds
+        this.zoomLevel = Math.max(0.5, Math.min(fitZoom, 3));
+
+        // Now center the content
+        const scale = this._baseScale * this.zoomLevel;
+        this.panX = (wrapperW / 2) - (contentCenterX * scale);
+        this.panY = (wrapperH / 2) - (contentCenterY * scale);
     }
 
     handleCanvasMouseDown(event) {
@@ -754,6 +848,139 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
             .finally(() => {
                 this.isCreating = false;
             });
+    }
+
+    handleDiscoverDependencies() {
+        this.isDiscovering = true;
+        previewDependencies({ assetId: this.recordId })
+            .then(result => {
+                this.discoveredDependencies = (result.candidates || []).map((c, idx) => ({
+                    ...c,
+                    selected: true,
+                    index: idx
+                }));
+                this.discoverySkipped = result.skipped || 0;
+                this.bulkDependencyType = '';
+                this.bulkCategory = '';
+                this.bulkStrength = '';
+                this.bulkImpact = '';
+                this.showDiscoveryModal = true;
+            })
+            .catch(error => {
+                console.error('Error previewing dependencies:', error);
+                this.showError(error);
+            })
+            .finally(() => {
+                this.isDiscovering = false;
+            });
+    }
+
+    get discoveryTotal() {
+        return this.discoveredDependencies.length;
+    }
+
+    get discoverySelectedCount() {
+        return this.discoveredDependencies.filter(d => d.selected).length;
+    }
+
+    get discoveryHasCandidates() {
+        return this.discoveredDependencies.length > 0;
+    }
+
+    get isConfirmDisabled() {
+        return this.discoverySelectedCount === 0;
+    }
+
+    handleToggleCandidate(event) {
+        const idx = parseInt(event.target.dataset.index, 10);
+        this.discoveredDependencies = this.discoveredDependencies.map((d, i) =>
+            i === idx ? { ...d, selected: !d.selected } : d
+        );
+    }
+
+    handleSelectAll() {
+        this.discoveredDependencies = this.discoveredDependencies.map(d => ({ ...d, selected: true }));
+    }
+
+    handleDeselectAll() {
+        this.discoveredDependencies = this.discoveredDependencies.map(d => ({ ...d, selected: false }));
+    }
+
+    handleBulkTypeChange(event) {
+        this.bulkDependencyType = event.detail.value;
+    }
+
+    handleBulkCategoryChange(event) {
+        this.bulkCategory = event.detail.value;
+    }
+
+    handleBulkStrengthChange(event) {
+        this.bulkStrength = event.detail.value;
+    }
+
+    handleBulkImpactChange(event) {
+        this.bulkImpact = event.detail.value;
+    }
+
+    handleApplyBulkAttributes() {
+        this.discoveredDependencies = this.discoveredDependencies.map(d => {
+            if (!d.selected) return d;
+            return {
+                ...d,
+                dependencyType: this.bulkDependencyType || d.dependencyType,
+                relationshipCategory: this.bulkCategory || d.relationshipCategory,
+                dependencyStrength: this.bulkStrength || d.dependencyStrength,
+                impactLevel: this.bulkImpact || d.impactLevel
+            };
+        });
+        this.showToast('Attributes Applied', 'Bulk attributes applied to selected candidates.', 'success');
+    }
+
+    handleConfirmDiscovery() {
+        const selected = this.discoveredDependencies.filter(d => d.selected);
+        if (selected.length === 0) return;
+
+        // Strip UI-only fields before sending to Apex
+        const payload = selected.map(({ sourceAssetId, sourceAssetName, dependentAssetId, dependentAssetName,
+            dependencyType, impactLevel, relationshipCategory, dependencyStrength, strategy }) => ({
+            sourceAssetId, sourceAssetName, dependentAssetId, dependentAssetName,
+            dependencyType, impactLevel, relationshipCategory, dependencyStrength, strategy
+        }));
+
+        this.isDiscovering = true;
+        createDiscoveredDependencies({ candidatesJson: JSON.stringify(payload) })
+            .then(count => {
+                this.showToast('Discovery Complete',
+                    `Created ${count} dependenc${count === 1 ? 'y' : 'ies'}.`, 'success');
+                this.showDiscoveryModal = false;
+                this.discoveredDependencies = [];
+                this.loadGraphData();
+            })
+            .catch(error => {
+                console.error('Error creating discovered dependencies:', error);
+                this.showError(error);
+            })
+            .finally(() => {
+                this.isDiscovering = false;
+            });
+    }
+
+    handleCloseDiscoveryModal() {
+        this.showDiscoveryModal = false;
+        this.discoveredDependencies = [];
+    }
+
+    get confirmButtonLabel() {
+        return `Create Selected (${this.discoverySelectedCount})`;
+    }
+
+    get impactLevelOptions() {
+        return [
+            { label: 'Critical', value: 'Critical' },
+            { label: 'High', value: 'High' },
+            { label: 'Medium', value: 'Medium' },
+            { label: 'Low', value: 'Low' }
+        ];
     }
 
     showToast(title, message, variant) {

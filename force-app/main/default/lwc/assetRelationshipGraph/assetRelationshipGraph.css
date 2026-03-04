@@ -1,4 +1,21 @@
+.graph-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .graph-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.toolbar-left,
+.toolbar-right {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -6,17 +23,20 @@
 }
 
 .lens-selector {
-    min-width: 160px;
+    min-width: 140px;
 }
 
 .hop-selector {
-    min-width: 100px;
+    min-width: 90px;
+}
+
+.graph-area {
+    position: relative;
 }
 
 .graph-container {
-    position: relative;
     background: #f3f3f3;
-    min-height: 600px;
+    min-height: 400px;
     padding: 1rem;
 }
 
@@ -117,8 +137,6 @@
 .canvas-wrapper {
     position: relative;
     width: 100%;
-    max-width: 1400px;
-    height: 700px;
     background: #ffffff;
     border: 1px solid #dddbda;
     border-radius: 0.25rem;
@@ -139,9 +157,8 @@
     position: relative;
     width: 1400px;
     height: 700px;
-    transform-origin: center center;
+    transform-origin: 0 0;
     transition: transform 0.2s ease;
-    flex-shrink: 0;
 }
 
 /* SVG Edges */
@@ -909,6 +926,97 @@
     justify-content: flex-end;
 }
 
+/* Discovery Preview Modal */
+.discovery-modal {
+    max-width: 900px;
+}
+
+.discovery-summary {
+    font-size: 0.875rem;
+    color: #706e6b;
+    margin: 0 0 1rem 0;
+}
+
+.bulk-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: #fafaf9;
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.bulk-field {
+    flex: 1;
+    min-width: 120px;
+}
+
+.bulk-apply-btn {
+    flex-shrink: 0;
+}
+
+.discovery-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.discovery-table-wrapper {
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
+}
+
+.discovery-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.discovery-table thead {
+    background: #fafaf9;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.discovery-table th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #706e6b;
+    text-transform: uppercase;
+    letter-spacing: 0.025rem;
+    border-bottom: 2px solid #dddbda;
+}
+
+.discovery-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #080707;
+    border-bottom: 1px solid #f3f3f3;
+}
+
+.discovery-table tbody tr:hover {
+    background: #fafaf9;
+}
+
+.discovery-table .col-checkbox {
+    width: 40px;
+    text-align: center;
+}
+
+.discovery-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #706e6b;
+    font-size: 0.875rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .details-panel {
@@ -918,7 +1026,19 @@
 
 @media (max-width: 768px) {
     .graph-toolbar {
-        flex-wrap: wrap;
+        padding: 0.5rem;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .lens-selector,
+    .hop-selector {
+        min-width: 0;
+        flex: 1;
     }
 
     .details-panel {
@@ -927,8 +1047,8 @@
         margin-top: 1rem;
     }
 
-    .canvas-wrapper {
-        height: 500px;
+    .graph-container {
+        min-height: 300px;
     }
 
     .modal-container {
