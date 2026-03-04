@@ -1,0 +1,23 @@
+<template>
+    <g class="graph-edge" data-edge-id={edge.id}>
+        <!-- Edge Line -->
+        <path
+            d={edgePath}
+            stroke={edgeColor}
+            stroke-width={edgeWidth}
+            stroke-dasharray={edgeStyle}
+            fill="none"
+            marker-end={markerEnd}
+            class="edge-path">
+        </path>
+
+        <!-- Edge Label (shown on hover or always in high zoom) -->
+        <text
+            x={labelPosition.x}
+            y={labelPosition.y}
+            text-anchor="middle"
+            class="edge-label">
+            {edge.label}
+        </text>
+    </g>
+</template>

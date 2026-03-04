@@ -1,0 +1,77 @@
+.graph-node {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.graph-node:hover circle {
+    stroke: #3b82f6;
+    stroke-width: 3;
+}
+
+.focus-node circle {
+    stroke: #1f2937;
+    stroke-width: 4;
+}
+
+/* Status Colors */
+.status-active {
+    fill: #d1fae5;
+    stroke: #10b981;
+}
+
+.status-degraded {
+    fill: #fef3c7;
+    stroke: #f59e0b;
+}
+
+.status-down {
+    fill: #fee2e2;
+    stroke: #ef4444;
+}
+
+.status-unknown {
+    fill: #f3f4f6;
+    stroke: #9ca3af;
+}
+
+/* Impact highlighting */
+.impact-direct circle {
+    fill: #fecaca !important;
+    stroke: #dc2626 !important;
+    stroke-width: 4;
+}
+
+.impact-indirect circle {
+    fill: #fed7aa !important;
+    stroke: #f59e0b !important;
+    stroke-width: 3;
+}
+
+/* Node elements */
+.node-icon {
+    font-size: 12px;
+    fill: #374151;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.node-label {
+    font-size: 12px;
+    font-weight: 500;
+    fill: #1f2937;
+    pointer-events: none;
+}
+
+/* Signal Badge */
+.signal-badge {
+    fill: #ef4444;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.signal-text {
+    font-size: 10px;
+    font-weight: 700;
+    fill: white;
+    pointer-events: none;
+}

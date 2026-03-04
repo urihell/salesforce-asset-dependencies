@@ -1,0 +1,64 @@
+<template>
+    <div class="legend-container">
+        <h4 class="legend-title">Legend</h4>
+
+        <!-- Relationship Categories -->
+        <div class="legend-section">
+            <div class="section-title">Relationship Type</div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #ef4444;"></span>
+                <span>Power</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #3b82f6;"></span>
+                <span>Network</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #06b6d4;"></span>
+                <span>Cooling</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #8b5cf6;"></span>
+                <span>Data</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line" style="background: #10b981;"></span>
+                <span>Maintenance</span>
+            </div>
+        </div>
+
+        <!-- Line Styles -->
+        <div class="legend-section">
+            <div class="section-title">Connection Style</div>
+            <div class="legend-item">
+                <span class="legend-line solid"></span>
+                <span>Physical</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line dashed"></span>
+                <span>Logical</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-line dotted"></span>
+                <span>Inferred</span>
+            </div>
+        </div>
+
+        <!-- Node Status -->
+        <div class="legend-section">
+            <div class="section-title">Asset Status</div>
+            <div class="legend-item">
+                <span class="legend-circle" style="background: #d1fae5; border-color: #10b981;"></span>
+                <span>Active</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-circle" style="background: #fef3c7; border-color: #f59e0b;"></span>
+                <span>Degraded</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-circle" style="background: #fee2e2; border-color: #ef4444;"></span>
+                <span>Down</span>
+            </div>
+        </div>
+    </div>
+</template>

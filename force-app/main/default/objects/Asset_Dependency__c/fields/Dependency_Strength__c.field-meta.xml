@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Dependency_Strength__c</fullName>
+    <label>Dependency Strength</label>
+    <description>Strength of dependency - affects edge thickness in graph</description>
+    <type>Picklist</type>
+    <required>false</required>
+    <externalId>false</externalId>
+    <trackTrending>false</trackTrending>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Hard Stop</fullName>
+                <default>false</default>
+                <label>Hard Stop</label>
+            </value>
+            <value>
+                <fullName>Degraded Service</fullName>
+                <default>true</default>
+                <label>Degraded Service</label>
+            </value>
+            <value>
+                <fullName>Soft Dependency</fullName>
+                <default>false</default>
+                <label>Soft Dependency</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

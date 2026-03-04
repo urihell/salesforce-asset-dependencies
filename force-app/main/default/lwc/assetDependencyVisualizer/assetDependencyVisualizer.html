@@ -1,0 +1,313 @@
+<template>
+    <lightning-card icon-name="custom:custom63">
+        <div slot="title">
+            <div class="card-title">Asset Dependency Analysis</div>
+        </div>
+
+        <!-- View Toggle and Filter -->
+        <div slot="actions" class="action-buttons">
+            <lightning-combobox
+                variant="label-hidden"
+                value={filterMode}
+                options={filterOptions}
+                onchange={handleFilterChange}
+                class="filter-dropdown">
+            </lightning-combobox>
+            <lightning-button-group>
+                <lightning-button
+                    label="List"
+                    icon-name="utility:list"
+                    class={listViewClass}
+                    data-view="list"
+                    onclick={handleViewChange}>
+                </lightning-button>
+                <lightning-button
+                    label="Tree"
+                    icon-name="utility:hierarchy"
+                    class={treeViewClass}
+                    data-view="tree"
+                    onclick={handleViewChange}>
+                </lightning-button>
+            </lightning-button-group>
+        </div>
+
+        <div class="component-body">
+            <template if:true={isLoading}>
+                <div class="loading-container">
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <template if:true={rootAsset}>
+                    <!-- Impact Summary - Collapsible -->
+                    <template if:true={showDownstreamSection}>
+                        <div class="section-container">
+                            <div class="section-header-clean" onclick={handleToggleSection} data-section="impact">
+                                <div class="section-header-left">
+                                    <lightning-icon icon-name={impactSummaryIcon} size="x-small" class="toggle-icon"></lightning-icon>
+                                    <span class="section-title">Impact Summary</span>
+                                </div>
+                            </div>
+                            <template if:true={showImpactSummary}>
+                                <div class={impactClass}>
+                                    <div class="impact-number">{totalImpactedAssets}</div>
+                                    <div class="impact-text">{impactSummary}</div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- List View -->
+                    <template if:true={isListView}>
+                        <!-- Upstream Dependencies Section - Collapsible -->
+                        <template if:true={showUpstreamSection}>
+                            <div class="section-container">
+                                <div class="section-header-clean upstream" onclick={handleToggleSection} data-section="upstream">
+                                    <div class="section-header-left">
+                                        <lightning-icon icon-name={upstreamIcon} size="x-small" class="toggle-icon"></lightning-icon>
+                                        <lightning-icon icon-name="utility:up" size="x-small" class="section-icon"></lightning-icon>
+                                        <span class="section-title">Dependencies</span>
+                                        <span class="section-count">{upstreamDependencies.length}</span>
+                                    </div>
+                                    <lightning-button-icon
+                                        icon-name="utility:add"
+                                        variant="bare"
+                                        alternative-text="Add Dependency"
+                                        title="Add Dependency"
+                                        class="add-icon"
+                                        data-direction="upstream"
+                                        onclick={handleAddDependency}>
+                                    </lightning-button-icon>
+                                </div>
+                                <template if:true={showUpstream}>
+                                    <template if:true={hasUpstreamDependencies}>
+                                        <div class="section-content">
+                                            <template for:each={upstreamDependencies} for:item="dep">
+                                                <c-asset-node
+                                                    key={dep.assetId}
+                                                    asset={dep}
+                                                    is-upstream="true"
+                                                    ondeletedependency={handleDeleteDependency}>
+                                                </c-asset-node>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template if:false={hasUpstreamDependencies}>
+                                        <div class="empty-state">
+                                            <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                                            <p>No dependencies configured</p>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Current Asset -->
+                        <template if:true={showCurrentAsset}>
+                            <div class="section-container current">
+                                <div class="section-header-clean current">
+                                    <div class="section-header-left">
+                                        <lightning-icon icon-name="utility:record" size="x-small" class="section-icon"></lightning-icon>
+                                        <span class="section-title">Current Asset</span>
+                                    </div>
+                                </div>
+                                <div class="section-content">
+                                    <c-asset-node
+                                        asset={rootAsset}
+                                        is-root="true">
+                                    </c-asset-node>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Downstream Dependencies Section - Collapsible -->
+                        <template if:true={showDownstreamSection}>
+                            <div class="section-container">
+                                <div class="section-header-clean downstream" onclick={handleToggleSection} data-section="downstream">
+                                    <div class="section-header-left">
+                                        <lightning-icon icon-name={downstreamIcon} size="x-small" class="toggle-icon"></lightning-icon>
+                                        <lightning-icon icon-name="utility:down" size="x-small" class="section-icon"></lightning-icon>
+                                        <span class="section-title">Impacted Assets</span>
+                                        <template if:true={hasDownstreamDependencies}>
+                                            <span class="section-count">{rootAsset.children.length}</span>
+                                        </template>
+                                    </div>
+                                    <lightning-button-icon
+                                        icon-name="utility:add"
+                                        variant="bare"
+                                        alternative-text="Add Dependent Asset"
+                                        title="Add Dependent Asset"
+                                        class="add-icon"
+                                        data-direction="downstream"
+                                        onclick={handleAddDependency}>
+                                    </lightning-button-icon>
+                                </div>
+                                <template if:true={showDownstream}>
+                                    <template if:true={hasDownstreamDependencies}>
+                                        <div class="section-content">
+                                            <template for:each={rootAsset.children} for:item="child">
+                                                <c-asset-node
+                                                    key={child.assetId}
+                                                    asset={child}
+                                                    is-downstream="true"
+                                                    ondeletedependency={handleDeleteDependency}>
+                                                </c-asset-node>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template if:false={hasDownstreamDependencies}>
+                                        <div class="empty-state">
+                                            <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                                            <p>No impacted assets configured</p>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Tree View -->
+                    <template if:true={isTreeView}>
+                        <div class="tree-view-wrapper">
+                            <c-asset-tree-view
+                                root-asset={rootAsset}
+                                upstream-dependencies={upstreamDependencies}
+                                show-upstream={showUpstreamSection}
+                                show-downstream={showDownstreamSection}
+                                show-current={showCurrentAsset}
+                                ondeletedependency={handleDeleteDependency}>
+                            </c-asset-tree-view>
+                        </div>
+                    </template>
+                </template>
+
+                <template if:true={error}>
+                    <div class="error-state">
+                        <lightning-icon icon-name="utility:error" size="medium"></lightning-icon>
+                        <p>Error loading dependencies</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+
+    <!-- Modal for Adding Dependencies -->
+    <template if:true={showModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container modal-container">
+                <header class="slds-modal__header modal-header">
+                    <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={handleCloseModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small" class="close-icon"></lightning-icon>
+                    </button>
+                    <h2 class="modal-title">{modalTitle}</h2>
+                    <p class="modal-subtitle">{modalDescription}</p>
+                </header>
+                <div class="slds-modal__content modal-content">
+                    <!-- Search Assets -->
+                    <lightning-input
+                        label="Search Assets"
+                        type="search"
+                        value={searchTerm}
+                        onchange={handleSearchChange}
+                        placeholder="Type to search..."
+                        class="search-input">
+                    </lightning-input>
+
+                    <!-- Search Results -->
+                    <template if:true={searchResults.length}>
+                        <div class="search-results">
+                            <template for:each={searchResults} for:item="result">
+                                <div key={result.assetId}
+                                     class="search-result-item"
+                                     data-asset-id={result.assetId}
+                                     data-asset-name={result.assetName}
+                                     onclick={handleAssetSelect}>
+                                    <lightning-icon icon-name="standard:asset_object" size="small"></lightning-icon>
+                                    <div class="result-info">
+                                        <div class="result-name">{result.assetName}</div>
+                                        <div class="result-details">{result.productName} • {result.serialNumber}</div>
+                                    </div>
+                                    <template if:true={result.assetId}>
+                                        <lightning-icon
+                                            if:true={selectedAssetId}
+                                            icon-name="utility:check"
+                                            size="small"
+                                            class="selected-icon">
+                                        </lightning-icon>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Selected Asset -->
+                    <template if:true={selectedAssetId}>
+                        <div class="selected-asset">
+                            <lightning-input
+                                label="Selected Asset"
+                                value={selectedAssetName}
+                                disabled>
+                            </lightning-input>
+                        </div>
+                    </template>
+
+                    <!-- Dependency Details -->
+                    <div class="form-row">
+                        <lightning-combobox
+                            label="Dependency Type"
+                            value={dependencyType}
+                            options={dependencyTypeOptions}
+                            onchange={handleDependencyTypeChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+
+                    <div class="form-row">
+                        <lightning-combobox
+                            label="Impact Level"
+                            value={impactLevel}
+                            options={impactLevelOptions}
+                            onchange={handleImpactLevelChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer modal-footer">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleCloseModal}
+                        class="cancel-button">
+                    </lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label="Save"
+                        onclick={handleSaveDependency}
+                        disabled={isCreating}
+                        class="save-button">
+                    </lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open modal-backdrop"></div>
+    </template>
+
+    <!-- Delete Confirmation Dialog -->
+    <template if:true={showDeleteConfirm}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Confirm Delete</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Are you sure you want to delete this dependency?</p>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={handleCancelDelete}></lightning-button>
+                    <lightning-button variant="destructive" label="Delete" onclick={handleConfirmDelete}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

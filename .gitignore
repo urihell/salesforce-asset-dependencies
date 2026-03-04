@@ -1,0 +1,33 @@
+# Salesforce DX
+.sfdx/
+.sf/
+.localdevserver/
+deploy-options.json
+
+# LWC
+**/__tests__/**
+**/.eslintrc.json
+**/node_modules/**
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Salesforce cache
+.salesforce/
+.sfdx/
+
+# Org specific
+*-scratch-def.json
+config/
+
+# Dependencies
+node_modules/

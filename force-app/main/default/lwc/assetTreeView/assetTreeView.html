@@ -1,0 +1,59 @@
+<template>
+    <div class="tree-container">
+        <!-- Upstream Dependencies -->
+        <template if:true={hasUpstream}>
+            <div class="tree-section upstream-section">
+                <div class="section-label">Dependencies</div>
+                <div class="tree-level">
+                    <template for:each={upstreamDependencies} for:item="dep">
+                        <div key={dep.assetId} class="tree-node-wrapper">
+                            <c-asset-tree-node
+                                asset={dep}
+                                node-type="upstream"
+                                ondeletedependency={handleDeleteDependency}>
+                            </c-asset-tree-node>
+                        </div>
+                    </template>
+                </div>
+                <template if:true={shouldShowCurrent}>
+                    <div class="connector-down"></div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Current Asset -->
+        <template if:true={shouldShowCurrent}>
+            <div class="tree-section current-section">
+                <div class="tree-level current-level">
+                    <div class="tree-node-wrapper">
+                        <c-asset-tree-node
+                            asset={rootAsset}
+                            node-type="current">
+                        </c-asset-tree-node>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Downstream Dependencies -->
+        <template if:true={hasDownstream}>
+            <div class="tree-section downstream-section">
+                <template if:true={shouldShowCurrent}>
+                    <div class="connector-down"></div>
+                </template>
+                <div class="section-label">Impacted Assets</div>
+                <div class="tree-level">
+                    <template for:each={rootAsset.children} for:item="child">
+                        <div key={child.assetId} class="tree-node-wrapper">
+                            <c-asset-tree-node
+                                asset={child}
+                                node-type="downstream"
+                                ondeletedependency={handleDeleteDependency}>
+                            </c-asset-tree-node>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

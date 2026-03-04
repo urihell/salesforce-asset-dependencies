@@ -1,0 +1,138 @@
+.tree-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    min-width: 100%;
+    background: #fafbfc;
+    border-radius: 8px;
+}
+
+.tree-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem 0;
+    width: 100%;
+}
+
+.section-label {
+    font-weight: 700;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+}
+
+.upstream-section .section-label {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+}
+
+.downstream-section .section-label {
+    background: #fff7ed;
+    color: #9a3412;
+    border: 1px solid #fed7aa;
+}
+
+.tree-level {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+}
+
+.current-level {
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.current-level::before,
+.current-level::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: #d1d5db;
+}
+
+.current-level::before {
+    top: -15px;
+}
+
+.current-level::after {
+    bottom: -15px;
+}
+
+.tree-node-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.connector-down {
+    width: 2px;
+    height: 40px;
+    background: #d1d5db;
+    margin: 0.75rem 0;
+    border-radius: 1px;
+}
+
+.upstream-section .connector-down {
+    background: linear-gradient(to bottom, #3b82f6, #60a5fa);
+}
+
+.downstream-section .connector-down {
+    background: linear-gradient(to bottom, #f59e0b, #fbbf24);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .tree-container {
+        padding: 1.5rem;
+    }
+
+    .tree-level {
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .tree-container {
+        padding: 1rem;
+    }
+
+    .tree-level {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .section-label {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.875rem;
+    }
+
+    .connector-down {
+        height: 30px;
+    }
+}

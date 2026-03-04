@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Dependent_Asset__c</fullName>
+    <label>Dependent Asset</label>
+    <description>The asset that depends on the source asset</description>
+    <type>Lookup</type>
+    <referenceTo>Asset</referenceTo>
+    <relationshipLabel>Dependencies</relationshipLabel>
+    <relationshipName>Dependencies</relationshipName>
+    <required>true</required>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <externalId>false</externalId>
+    <trackTrending>false</trackTrending>
+</CustomField>

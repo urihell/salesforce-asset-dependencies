@@ -1,0 +1,628 @@
+<template>
+    <lightning-card title="Asset Relationship Graph" icon-name="custom:custom63">
+        <!-- Toolbar -->
+        <div slot="actions" class="graph-toolbar">
+            <lightning-button
+                label="New Dependency"
+                icon-name="utility:add"
+                variant="brand"
+                onclick={handleOpenCreateModal}>
+            </lightning-button>
+
+            <lightning-combobox
+                variant="label-hidden"
+                value={viewLens}
+                options={lensOptions}
+                onchange={handleLensChange}
+                class="lens-selector"
+                placeholder="View">
+            </lightning-combobox>
+
+            <lightning-combobox
+                variant="label-hidden"
+                value={maxHops}
+                options={hopOptions}
+                onchange={handleHopChange}
+                class="hop-selector"
+                placeholder="Hops">
+            </lightning-combobox>
+
+            <lightning-button-group>
+                <lightning-button
+                    icon-name="utility:zoomin"
+                    variant="neutral"
+                    title="Zoom In"
+                    onclick={handleZoomIn}>
+                </lightning-button>
+                <lightning-button
+                    icon-name="utility:zoomout"
+                    variant="neutral"
+                    title="Zoom Out"
+                    onclick={handleZoomOut}>
+                </lightning-button>
+                <lightning-button
+                    icon-name="utility:refresh"
+                    variant="neutral"
+                    title="Reset View"
+                    onclick={handleResetView}>
+                </lightning-button>
+            </lightning-button-group>
+
+            <lightning-button
+                icon-name="utility:filterList"
+                variant="neutral"
+                title="Toggle Filters"
+                onclick={handleToggleFilters}>
+            </lightning-button>
+
+            <lightning-button
+                icon-name="utility:info"
+                variant="neutral"
+                title="Toggle Legend"
+                onclick={handleToggleLegend}>
+            </lightning-button>
+
+            <lightning-button
+                icon-name="utility:preview"
+                variant="neutral"
+                title="Toggle Mini-Map"
+                onclick={handleToggleMiniMap}>
+            </lightning-button>
+
+            <lightning-button
+                label={showTableView}
+                icon-name="utility:table"
+                variant="neutral"
+                title="Toggle Table View"
+                onclick={handleToggleTableView}>
+            </lightning-button>
+        </div>
+
+        <div class="graph-container">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <lightning-input
+                    type="search"
+                    label="Search Assets"
+                    value={navSearchTerm}
+                    onchange={handleNavSearchChange}
+                    placeholder="Search by name or serial number..."
+                    variant="label-hidden">
+                </lightning-input>
+
+                <template if:true={showNavSearchResults}>
+                    <div class="search-results">
+                        <template for:each={navSearchResults} for:item="result">
+                            <div key={result.id}
+                                 class="search-result-item"
+                                 data-asset-id={result.id}
+                                 onclick={handleSearchResultClick}>
+                                <div class="search-result-name">{result.name}</div>
+                                <div class="search-result-details">
+                                    <template if:true={result.serialNumber}>
+                                        SN: {result.serialNumber} •
+                                    </template>
+                                    <template if:true={result.productName}>
+                                        {result.productName} •
+                                    </template>
+                                    {result.status}
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Breadcrumbs -->
+            <template if:true={hasBreadcrumbs}>
+                <div class="breadcrumbs-container">
+                    <template for:each={breadcrumbs} for:item="crumb" for:index="index">
+                        <div key={crumb.id} class="breadcrumb-item">
+                            <template if:false={crumb.isLast}>
+                                <span class="breadcrumb-link"
+                                      data-asset-id={crumb.id}
+                                      onclick={handleBreadcrumbClick}>
+                                    {crumb.name}
+                                </span>
+                                <span class="breadcrumb-separator">›</span>
+                            </template>
+                            <template if:true={crumb.isLast}>
+                                <span class="breadcrumb-current">{crumb.name}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Filter Panel -->
+            <template if:true={showFilters}>
+                <div class="filter-panel">
+                    <h4>Filters</h4>
+
+                    <div class="filter-group">
+                        <lightning-checkbox-group
+                            label="Relationship Types"
+                            options={relationshipTypeOptions}
+                            value={relationshipTypeFilters}
+                            onchange={handleRelationshipTypeFilter}>
+                        </lightning-checkbox-group>
+                    </div>
+
+                    <div class="filter-group">
+                        <lightning-checkbox-group
+                            label="Status"
+                            options={statusFilterOptions}
+                            value={statusFilters}
+                            onchange={handleStatusFilter}>
+                        </lightning-checkbox-group>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={isLoading}>
+                <div class="loading-state">
+                    <lightning-spinner alternative-text="Loading graph..." size="large"></lightning-spinner>
+                    <p class="loading-text">Building relationship graph...</p>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <template if:true={hasGraphData}>
+                    <!-- Canvas Container -->
+                    <div class="canvas-wrapper" data-zoom={canvasDataZoom}
+                         onmousedown={handleCanvasMouseDown}
+                         onmousemove={handleCanvasMouseMove}
+                         onmouseup={handleCanvasMouseUp}
+                         onmouseleave={handleCanvasMouseUp}>
+                        <div class="canvas-inner" style={canvasStyle}>
+                            <!-- SVG layer for edges — explicit px dimensions match canvas-inner -->
+                            <svg class="edges-svg" width="1400" height="700">
+                                <template for:each={edges} for:item="edge">
+                                    <g key={edge.id} data-edge-id={edge.id} onclick={handleEdgeClick}>
+                                        <path d={edge.pathData}
+                                              stroke={edge.color}
+                                              stroke-width={edge.width}
+                                              stroke-dasharray={edge.dashArray}
+                                              fill="none"
+                                              opacity={edge.opacity}
+                                              class="edge-path"
+                                              stroke-linecap="round">
+                                        </path>
+                                        <!-- Arrowhead -->
+                                        <polygon points={edge.arrowPoints}
+                                                 fill={edge.color}
+                                                 opacity={edge.opacity}
+                                                 transform={edge.arrowTransform}>
+                                        </polygon>
+                                    </g>
+                                </template>
+                            </svg>
+
+                            <!-- Render nodes -->
+                            <template for:each={nodes} for:item="node">
+                                <div key={node.id}
+                                     class="node-card"
+                                     data-node-id={node.id}
+                                     style={node.positionStyle}
+                                     onclick={handleNodeClick}>
+                                    <div class={node.statusClass}
+                                         data-is-critical={node.isOnCriticalPath}>
+                                        <div class="node-content">
+                                            <lightning-icon
+                                                icon-name={node.iconName}
+                                                size="x-small">
+                                            </lightning-icon>
+                                            <div class="node-name">{node.name}</div>
+                                            <template if:true={node.hasSignals}>
+                                                <div class="node-signal-badges">
+                                                    <template if:true={node.hasWorkOrders}>
+                                                        <div class="signal-badge signal-badge-wo" title="Open Work Orders">{node.workOrderCount}</div>
+                                                    </template>
+                                                    <template if:true={node.hasCases}>
+                                                        <div class="signal-badge signal-badge-cases" title="Open Cases">{node.caseCount}</div>
+                                                    </template>
+                                                    <template if:true={node.hasAlerts}>
+                                                        <div class="signal-badge signal-badge-alerts" title="Active Alerts">{node.alertCount}</div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <template if:true={showLegend}>
+                        <c-graph-legend></c-graph-legend>
+                    </template>
+
+                    <!-- Node Details Panel -->
+                    <template if:true={selectedNode}>
+                        <div class="details-panel">
+                            <div class="panel-header">
+                                <h3>{selectedNode.name}</h3>
+                                <lightning-button-icon
+                                    icon-name="utility:close"
+                                    variant="bare"
+                                    onclick={handleClosePanel}>
+                                </lightning-button-icon>
+                            </div>
+
+                            <!-- Tabs -->
+                            <div class="panel-tabs">
+                                <lightning-tabset active-tab-value={selectedTab} onselect={handleTabChange}>
+                                    <lightning-tab label="Overview" value="overview">
+                                        <div class="panel-content">
+                                            <dl>
+                                                <dt>Type:</dt>
+                                                <dd>{selectedNode.assetType}</dd>
+                                                <dt>Status:</dt>
+                                                <dd>{selectedNode.status}</dd>
+                                                <dt>Serial:</dt>
+                                                <dd>{selectedNode.serialNumber}</dd>
+                                                <template if:true={selectedNode.owner}>
+                                                    <dt>Owner:</dt>
+                                                    <dd>{selectedNode.owner}</dd>
+                                                </template>
+                                                <template if:true={selectedNode.site}>
+                                                    <dt>Site:</dt>
+                                                    <dd>{selectedNode.site}</dd>
+                                                </template>
+                                            </dl>
+
+                                            <template if:true={selectedNode.signals}>
+                                                <div class="signals-section">
+                                                    <h4>Quick Stats</h4>
+                                                    <div class="signal-item">
+                                                        <span>Open Work Orders:</span>
+                                                        <span class="signal-count">{selectedNode.signals.openWorkOrders}</span>
+                                                    </div>
+                                                    <div class="signal-item">
+                                                        <span>Open Cases:</span>
+                                                        <span class="signal-count">{selectedNode.signals.openCases}</span>
+                                                    </div>
+                                                    <div class="signal-item">
+                                                        <span>Active Alerts:</span>
+                                                        <span class="signal-count">{selectedNode.signals.activeAlerts}</span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </lightning-tab>
+
+                                    <lightning-tab label="Relationships" value="relationships">
+                                        <div class="panel-content">
+                                            <p style="font-size: 0.875rem; color: #706e6b; margin-bottom: 0.75rem;">
+                                                This asset has {relationshipsTableData.length} relationship(s).
+                                            </p>
+                                            <template for:each={relationshipsTableData} for:item="rel">
+                                                <div key={rel.id} style="padding: 0.75rem 0; border-bottom: 1px solid #f3f3f3;">
+                                                    <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                                                        {rel.relatedAssetName}
+                                                    </div>
+                                                    <div style="font-size: 0.75rem; color: #706e6b;">
+                                                        {rel.direction} • {rel.category} • {rel.strength}
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="panel-actions">
+                                            <lightning-button
+                                                label="Export CSV"
+                                                icon-name="utility:download"
+                                                onclick={handleExportRelationships}>
+                                            </lightning-button>
+                                        </div>
+                                    </lightning-tab>
+
+                                    <lightning-tab label="Open Work" value="work">
+                                        <div class="panel-content">
+                                            <div class="work-metrics">
+                                                <div class={workOrdersClass}>
+                                                    <span class="metric-value">{openWorkOrders}</span>
+                                                    <span class="metric-label">Work Orders</span>
+                                                </div>
+                                                <div class={casesClass}>
+                                                    <span class="metric-value">{openCases}</span>
+                                                    <span class="metric-label">Cases</span>
+                                                </div>
+                                                <div class={alertsClass}>
+                                                    <span class="metric-value">{activeAlerts}</span>
+                                                    <span class="metric-label">Alerts</span>
+                                                </div>
+                                            </div>
+                                            <template if:true={hasAlertRecords}>
+                                                <div style="margin-top: 1rem;">
+                                                    <h4 style="font-size: 0.875rem; font-weight: 700; margin-bottom: 0.5rem;">Active Alerts</h4>
+                                                    <template for:each={alertRecords} for:item="alert">
+                                                        <div key={alert.id} style="padding: 0.5rem 0; border-bottom: 1px solid #f3f3f3;">
+                                                            <div style="font-weight: 600; font-size: 0.8125rem;">{alert.name}</div>
+                                                            <div style="font-size: 0.75rem; color: #706e6b;">
+                                                                Effective: {alert.effectiveDate}
+                                                                <template if:true={alert.validUntilDate}>
+                                                                     • Until: {alert.validUntilDate}
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <p style="font-size: 0.875rem; color: #706e6b; text-align: center; margin-top: 1rem;">
+                                                Detailed work orders and cases can be viewed on the asset record page.
+                                            </p>
+                                        </div>
+                                    </lightning-tab>
+
+                                    <lightning-tab label="Health" value="health">
+                                        <div class="panel-content">
+                                            <p style="font-size: 0.875rem; color: #706e6b; text-align: center; margin-top: 2rem;">
+                                                Health and telemetry data will be displayed here when available.
+                                            </p>
+                                        </div>
+                                    </lightning-tab>
+                                </lightning-tabset>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Edge Details Panel -->
+                    <template if:true={selectedEdge}>
+                        <div class="details-panel edge-details">
+                            <div class="panel-header">
+                                <h3>Dependency Details</h3>
+                                <lightning-button-icon
+                                    icon-name="utility:close"
+                                    variant="bare"
+                                    onclick={handleClosePanel}>
+                                </lightning-button-icon>
+                            </div>
+
+                            <div class="panel-content">
+                                <dl>
+                                    <dt>From:</dt>
+                                    <dd>{selectedEdgeSourceName}</dd>
+                                    <dt>To:</dt>
+                                    <dd>{selectedEdgeTargetName}</dd>
+                                    <dt>Type:</dt>
+                                    <dd>{selectedEdge.dependencyType}</dd>
+                                    <dt>Category:</dt>
+                                    <dd>{selectedEdge.category}</dd>
+                                    <dt>Strength:</dt>
+                                    <dd>{selectedEdge.strength}</dd>
+                                    <dt>Impact Level:</dt>
+                                    <dd>{selectedEdge.impactLevel}</dd>
+                                </dl>
+                            </div>
+
+                            <div class="panel-actions">
+                                <lightning-button
+                                    label="Delete Dependency"
+                                    variant="destructive"
+                                    icon-name="utility:delete"
+                                    onclick={handleDeleteDependency}>
+                                </lightning-button>
+                            </div>
+
+                            <!-- Delete Confirmation -->
+                            <template if:true={showDeleteConfirm}>
+                                <div class="delete-confirm-overlay">
+                                    <div class="delete-confirm-box">
+                                        <p>Are you sure you want to delete this dependency?</p>
+                                        <div class="delete-confirm-actions">
+                                            <lightning-button label="Cancel" onclick={handleCancelDelete}></lightning-button>
+                                            <lightning-button variant="destructive" label="Delete" onclick={handleConfirmDelete}></lightning-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                </template>
+
+                <template if:false={hasGraphData}>
+                    <div class="empty-state">
+                        <lightning-icon icon-name="utility:info" size="large"></lightning-icon>
+                        <p>No relationship data available for this asset.</p>
+                    </div>
+                </template>
+            </template>
+
+            <template if:true={error}>
+                <div class="error-state">
+                    <lightning-icon icon-name="utility:error" size="large"></lightning-icon>
+                    <p>Error loading graph. Please try again.</p>
+                </div>
+            </template>
+
+            <!-- Table View -->
+            <template if:true={showTableView}>
+                <div class="table-view-container">
+                    <div class="table-header">
+                        <h3>All Relationships ({relationshipsTableData.length})</h3>
+                        <lightning-button
+                            label="Export CSV"
+                            icon-name="utility:download"
+                            onclick={handleExportRelationships}>
+                        </lightning-button>
+                    </div>
+
+                    <table class="relationships-table">
+                        <thead>
+                            <tr>
+                                <th>Related Asset</th>
+                                <th>Direction</th>
+                                <th>Category</th>
+                                <th>Strength</th>
+                                <th>Type</th>
+                                <th>Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={relationshipsTableData} for:item="rel">
+                                <tr key={rel.id}>
+                                    <td>
+                                        <span class="table-link"
+                                              data-asset-id={rel.relatedAssetId}
+                                              onclick={handleSearchResultClick}>
+                                            {rel.relatedAssetName}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class={rel.directionClass}>
+                                            {rel.direction}
+                                        </span>
+                                    </td>
+                                    <td>{rel.category}</td>
+                                    <td>{rel.strength}</td>
+                                    <td>{rel.dependencyType}</td>
+                                    <td>{rel.impactLevel}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <template if:false={relationshipsTableData.length}>
+                        <p style="text-align: center; padding: 2rem; color: #706e6b;">
+                            No relationships found for this asset.
+                        </p>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Zoom Indicator -->
+            <template if:true={hasGraphData}>
+                <div class="zoom-indicator">
+                    <span class="zoom-percentage">{zoomPercentage}%</span>
+                    <span class="zoom-label">{zoomClass} Zoom</span>
+                    <span style="margin-left: 0.5rem; font-size: 0.75rem; color: #706e6b;">
+                        • {nodeCount} nodes • {edgeCount} edges
+                    </span>
+                </div>
+            </template>
+
+            <!-- Mini-Map -->
+            <template if:true={showMiniMap}>
+                <template if:true={hasGraphData}>
+                    <div class="mini-map">
+                        <div class="mini-map-header">Overview</div>
+                        <div class="mini-map-canvas">
+                            <template for:each={miniMapNodes} for:item="node">
+                                <div key={node.id}
+                                     class={node.miniNodeClass}
+                                     data-node-id={node.id}
+                                     style={node.miniPositionStyle}>
+                                </div>
+                            </template>
+                            <div class="mini-map-viewport" style={miniMapViewportStyle}></div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+        <!-- Create Dependency Modal -->
+        <template if:true={showCreateModal}>
+            <div class="modal-backdrop" onclick={handleCloseCreateModal}>
+                <div class="modal-container" onclick={handleStopPropagation}>
+                    <div class="modal-header">
+                        <h2>Create Dependency</h2>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            variant="bare"
+                            alternative-text="Close"
+                            onclick={handleCloseCreateModal}>
+                        </lightning-button-icon>
+                    </div>
+
+                    <div class="modal-content">
+                        <div class="form-group">
+                            <lightning-input
+                                label="Search Asset"
+                                value={searchTerm}
+                                onchange={handleSearchChange}
+                                placeholder="Enter asset name or serial number">
+                            </lightning-input>
+                        </div>
+
+                        <template if:true={searchResults.length}>
+                            <div class="form-group">
+                                <lightning-combobox
+                                    label="Select Asset"
+                                    value={selectedAssetId}
+                                    options={searchResults}
+                                    onchange={handleAssetSelect}
+                                    placeholder="Choose an asset">
+                                </lightning-combobox>
+                            </div>
+                        </template>
+
+                        <div class="form-group">
+                            <lightning-combobox
+                                label="Dependency Type"
+                                value={dependencyType}
+                                options={dependencyTypeOptions}
+                                onchange={handleDependencyTypeChange}
+                                placeholder="Select dependency type">
+                            </lightning-combobox>
+                        </div>
+
+                        <div class="form-group">
+                            <lightning-combobox
+                                label="Relationship Category"
+                                value={relationshipCategory}
+                                options={relationshipTypeOptions}
+                                onchange={handleRelationshipCategoryChange}
+                                placeholder="Select category">
+                            </lightning-combobox>
+                        </div>
+
+                        <div class="form-group">
+                            <lightning-combobox
+                                label="Dependency Strength"
+                                value={dependencyStrength}
+                                options={dependencyStrengthOptions}
+                                onchange={handleDependencyStrengthChange}
+                                placeholder="Select strength">
+                            </lightning-combobox>
+                        </div>
+
+                        <div class="form-group">
+                            <lightning-combobox
+                                label="Connection Style"
+                                value={relationshipStyle}
+                                options={relationshipStyleOptions}
+                                onchange={handleRelationshipStyleChange}
+                                placeholder="Select style">
+                            </lightning-combobox>
+                        </div>
+
+                        <div class="form-group">
+                            <lightning-input
+                                label="Impact Level"
+                                value={impactLevel}
+                                onchange={handleImpactLevelChange}
+                                placeholder="e.g., Critical, High, Medium, Low">
+                            </lightning-input>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <lightning-button
+                            label="Cancel"
+                            onclick={handleCloseCreateModal}>
+                        </lightning-button>
+                        <lightning-button
+                            label="Create"
+                            variant="brand"
+                            onclick={handleCreateDependency}
+                            disabled={isCreating}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+</template>

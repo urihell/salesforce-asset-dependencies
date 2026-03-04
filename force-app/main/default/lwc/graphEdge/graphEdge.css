@@ -1,0 +1,23 @@
+.graph-edge {
+    cursor: pointer;
+}
+
+.edge-path {
+    transition: stroke-width 0.2s ease;
+}
+
+.graph-edge:hover .edge-path {
+    stroke-width: 3;
+}
+
+.edge-label {
+    font-size: 11px;
+    fill: #6b7280;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.graph-edge:hover .edge-label {
+    opacity: 1;
+}

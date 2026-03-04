@@ -1,0 +1,70 @@
+<template>
+    <div class={nodeClass}>
+        <div class="asset-card" onclick={handleAssetClick}>
+            <!-- Asset Header -->
+            <div class="asset-header">
+                <lightning-icon icon-name="standard:asset_object" size="small" class="asset-icon"></lightning-icon>
+                <div class="asset-info">
+                    <div class="asset-name">{assetDisplayName}</div>
+                    <template if:true={productDisplay}>
+                        <div class="asset-product">{productDisplay}</div>
+                    </template>
+                </div>
+                <template if:true={canDelete}>
+                    <lightning-button-icon
+                        icon-name="utility:delete"
+                        variant="bare"
+                        alternative-text="Delete Dependency"
+                        title="Delete Dependency"
+                        class="delete-button"
+                        onclick={handleDelete}>
+                    </lightning-button-icon>
+                </template>
+            </div>
+
+            <!-- Asset Details -->
+            <div class="asset-details">
+                <template if:true={serialDisplay}>
+                    <div class="detail-item">
+                        <lightning-icon icon-name="utility:number_input" size="xx-small"></lightning-icon>
+                        <span class="detail-text">{serialDisplay}</span>
+                    </div>
+                </template>
+                <template if:true={statusDisplay}>
+                    <div class="detail-item">
+                        <span class={statusClass}>{statusDisplay}</span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Dependency Info -->
+            <template if:true={showDependencyInfo}>
+                <div class="dependency-info">
+                    <template if:true={dependencyTypeDisplay}>
+                        <span class="dependency-badge">
+                            <lightning-icon icon-name="utility:link" size="xx-small"></lightning-icon>
+                            {dependencyTypeDisplay}
+                        </span>
+                    </template>
+                    <template if:true={asset.impactLevel}>
+                        <span class={impactLevelClass}>{asset.impactLevel}</span>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Children -->
+        <template if:true={hasChildren}>
+            <div class="children-container">
+                <template for:each={asset.children} for:item="child">
+                    <c-asset-node
+                        key={child.assetId}
+                        asset={child}
+                        is-downstream={isDownstream}
+                        is-upstream={isUpstream}>
+                    </c-asset-node>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

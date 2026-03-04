@@ -1,0 +1,90 @@
+=== Test Results
+TEST NAME                                                                    OUTCOME  MESSAGE                                                                                                                                                                                                          RUNTIME (MS)
+───────────────────────────────────────────────────────────────────────────  ───────  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  ────────────
+AssetGraphControllerTest.testExpandNode                                      Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testExpandNodeBothDirections                        Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testExpandNodeUpstream                              Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetBlastRadius                                  Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetBlastRadiusNoDownstream                      Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetContainmentHierarchy                         Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetContainmentHierarchyNoParent                 Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetCriticalPath                                 Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetGraphData                                    Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetGraphDataInvalidAsset                        Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGetGraphDataWithInactiveDependencies            Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGraphEdgeProperties                             Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testGraphNodeSignals                                Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testSearchAssetsForNav                              Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetGraphControllerTest.testSearchAssetsForNavNoResults                     Fail     System.DmlException: Insert failed. First exception on row 0; first error: INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST, Relationship Style: bad value for restricted picklist field: solid: [Relationship_Style__c]  
+                                                                                      Class.AssetGraphControllerTest.setupTestData: line 98, column 1                                                                                                                                                              
+AssetDependencyControllerTest.testCreateDependency                           Fail     System.AuraHandledException: Script-thrown exception                                                                                                                                                             
+                                                                                      Class.AssetDependencyController.createDependency: line 171, column 1                                                                                                                                             
+                                                                                      Class.AssetDependencyControllerTest.testCreateDependency: line 184, column 1                                                                                                                                                 
+AssetDependencyControllerTest.testCreateDependency_Circular                  Fail     System.AssertException: Assertion Failed: Should mention circular dependency                                                                                                                                     
+                                                                                      Class.AssetDependencyControllerTest.testCreateDependency_Circular: line 251, column 1                                                                                                                                        
+AssetDependencyControllerTest.testCreateDependency_Duplicate                 Fail     System.AssertException: Assertion Failed: Should mention duplicate                                                                                                                                               
+                                                                                      Class.AssetDependencyControllerTest.testCreateDependency_Duplicate: line 228, column 1                                                                                                                                       
+AssetDependencyControllerTest.testDeleteDependency                           Pass                                                                                                                                                                                                                      1968        
+AssetDependencyControllerTest.testDeleteDependency_Invalid                   Fail     System.AssertException: Assertion Failed: Should have thrown exception                                                                                                                                           
+                                                                                      Class.AssetDependencyControllerTest.testDeleteDependency_Invalid: line 333, column 1                                                                                                                                         
+AssetDependencyControllerTest.testGetAssetDependencies_InactiveDependencies  Fail     System.AssertException: Assertion Failed: Should have 3 impacted assets (excluding inactive dependency): Expected: 3, Actual: 1                                                                                  
+                                                                                      Class.AssetDependencyControllerTest.testGetAssetDependencies_InactiveDependencies: line 174, column 1                                                                                                                        
+AssetDependencyControllerTest.testGetAssetDependencies_InvalidAssetId        Fail     System.AssertException: Assertion Failed: Exception message should mention error                                                                                                                                 
+                                                                                      Class.AssetDependencyControllerTest.testGetAssetDependencies_InvalidAssetId: line 148, column 1                                                                                                                              
+AssetDependencyControllerTest.testGetAssetDependencies_MainSwitch            Fail     System.AssertException: Assertion Failed: Should have 4 impacted assets (1 switch + 3 ONTs): Expected: 4, Actual: 2                                                                                              
+                                                                                      Class.AssetDependencyControllerTest.testGetAssetDependencies_MainSwitch: line 106, column 1                                                                                                                                  
+AssetDependencyControllerTest.testGetAssetDependencies_ONTWithNoChildren     Pass                                                                                                                                                                                                                      46          
+AssetDependencyControllerTest.testGetAssetDependencies_SecondarySwitch       Pass                                                                                                                                                                                                                      49          
+AssetDependencyControllerTest.testGetPicklistValues                          Pass                                                                                                                                                                                                                      42          
+AssetDependencyControllerTest.testSearchAssets                               Pass                                                                                                                                                                                                                      45          
+AssetDependencyControllerTest.testSearchAssets_NoResults                     Pass                                                                                                                                                                                                                      54          
+
+
+=== Apex Code Coverage by Class
+CLASSES                                  PERCENT  UNCOVERED LINES       
+───────────────────────────────────────  ───────  ──────────────────────
+AssetDependencyController                85%      85,188,189,190,191,...
+SDO_Tool_SalesforceRewindTriggerHandler  7%       6,8,9,10,13,...       
+SDO_Tool_SalesforceRewind_Asset          100%                           
+SDO_Tool_SalesforceRewind_Account        100%                           
+SDO_Tool_SalesforceRewind_Product2       100%                           
+
+
+=== Test Setup Time by Test Class for Run 707Ho0000DIFlIv
+TEST SETUP METHOD NAME                       SETUP TIME
+───────────────────────────────────────────  ──────────
+AssetGraphControllerTest.setupTestData       1213      
+AssetDependencyControllerTest.setupTestData  428       
+
+
+=== Test Summary
+NAME                 VALUE              
+───────────────────  ───────────────────
+Outcome              Failed             
+Tests Ran            30                 
+Pass Rate            23%                
+Fail Rate            77%                
+Skip Rate            0%                 
+Test Run Id          707Ho0000DIFlIv    
+Test Setup Time      1641 ms            
+Test Execution Time  2664 ms            
+Test Total Time      4305 ms            
+Org Id               00DHo00000UPBuCMAX 
+Username             udabby@telcoaf.demo
+Org Wide Coverage    29%                
+
+[1m[33mWarning:[39m[22m The input format for array arguments has changed. Use this format: --array-flag value1 --array-flag value2 --array-flag value3
