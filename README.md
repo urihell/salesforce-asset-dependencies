@@ -21,9 +21,21 @@ A Lightning Web Component that visualizes operational dependencies between asset
   - `Impact_Level__c`: Severity if source fails (Critical, High, Medium, Low)
   - `Is_Active__c`: Whether the dependency is currently active
 
+### Custom Metadata Type
+- **Product_Dependency_Rule__mdt**: Admin-configurable rules for auto-discovering product-based dependencies (no code changes needed to add new rules)
+  - `Source_Keyword__c`: Keyword to match in the source product name
+  - `Dependent_Keyword__c`: Keyword(s) for the dependent product (comma-separated)
+  - `Dependency_Type__c`: e.g., "Fiber Connection", "Network Connection"
+  - `Impact_Level__c`: e.g., "Critical", "High"
+  - `Relationship_Category__c`: e.g., "Network", "Data"
+  - `Dependency_Strength__c`: e.g., "Hard Stop", "Degraded Service"
+
+  Ships with 3 default rules: Router→Switch, Switch→ONT/Modem, Server→Network
+
 ### Apex Classes
-- **AssetDependencyController**: Queries and builds the dependency tree
-- **AssetDependencyControllerTest**: Comprehensive test coverage (>90%)
+- **AssetDependencyController**: Queries and builds the dependency tree, auto-discovers dependencies using CMT rules
+- **AssetGraphController**: Graph visualization with BFS traversal, critical path, and blast radius analysis
+- **AssetDependencyControllerTest / AssetGraphControllerTest**: Comprehensive test coverage
 
 ### Lightning Web Components
 - **assetDependencyVisualizer**: Main component for Asset record pages
@@ -31,12 +43,28 @@ A Lightning Web Component that visualizes operational dependencies between asset
 
 ## Installation
 
-### Prerequisites
+### Option A: Install the Released Package (Recommended)
+
+Install the released unlocked package directly into your org — no CLI or source code required.
+
+**Package Version ID:** `04tHo0000015xFsIAI`
+
+1. **Click the install link:**
+   [Install Asset Dependency Visualizer](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tHo0000015xFsIAI)
+
+2. **Or use the CLI:**
+   ```bash
+   sf package install --package 04tHo0000015xFsIAI --target-org <your-org-alias> --wait 10
+   ```
+
+### Option B: Deploy from Source
+
+#### Prerequisites
 - Salesforce CLI (sf CLI)
 - A Salesforce org (Sandbox or Developer Edition recommended)
 - Asset Management feature enabled
 
-### Deployment Steps
+#### Deployment Steps
 
 1. **Clone or download this repository**
    ```bash

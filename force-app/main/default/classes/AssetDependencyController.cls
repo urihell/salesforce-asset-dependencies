@@ -387,7 +387,7 @@ public with sharing class AssetDependencyController {
 
                 for (Asset peer : accountAssets) {
                     String peerProduct = peer.Product2.Name.toLowerCase();
-                    ProductRule rule = matchProductRule(focusProduct, peerProduct);
+                    ProductRuleMatch rule = matchProductRule(focusProduct, peerProduct);
                     if (rule == null) continue;
 
                     Id sourceId = rule.focusIsSource ? assetId : peer.Id;
@@ -470,44 +470,45 @@ public with sharing class AssetDependencyController {
         );
     }
 
-    private static ProductRule matchProductRule(String focusProduct, String peerProduct) {
-        // Router → Switch
-        if (focusProduct.contains('router') && (peerProduct.contains('switch'))) {
-            return new ProductRule(true, 'Fiber Connection', 'Critical', 'Network', 'Hard Stop');
-        }
-        if (peerProduct.contains('router') && (focusProduct.contains('switch'))) {
-            return new ProductRule(false, 'Fiber Connection', 'Critical', 'Network', 'Hard Stop');
-        }
-        // Switch → ONT/Modem
-        if (focusProduct.contains('switch') && (peerProduct.contains('ont') || peerProduct.contains('modem'))) {
-            return new ProductRule(true, 'Network Connection', 'High', 'Network', 'Degraded Service');
-        }
-        if (peerProduct.contains('switch') && (focusProduct.contains('ont') || focusProduct.contains('modem'))) {
-            return new ProductRule(false, 'Network Connection', 'High', 'Network', 'Degraded Service');
-        }
-        // Server → Switch/Router
-        if (focusProduct.contains('server') && (peerProduct.contains('switch') || peerProduct.contains('router'))) {
-            return new ProductRule(true, 'Data Feed', 'Critical', 'Data', 'Hard Stop');
-        }
-        if (peerProduct.contains('server') && (focusProduct.contains('switch') || focusProduct.contains('router'))) {
-            return new ProductRule(false, 'Data Feed', 'Critical', 'Data', 'Hard Stop');
+    private static ProductRuleMatch matchProductRule(String focusProduct, String peerProduct) {
+        for (Product_Dependency_Rule__mdt rule : Product_Dependency_Rule__mdt.getAll().values()) {
+            String sourceKey = rule.Source_Keyword__c.toLowerCase();
+            List<String> depKeys = rule.Dependent_Keyword__c.toLowerCase().split(',');
+
+            // Check forward: focus is source, peer is dependent
+            if (focusProduct.contains(sourceKey) && containsAny(peerProduct, depKeys)) {
+                return new ProductRuleMatch(true, rule);
+            }
+            // Check reverse: peer is source, focus is dependent
+            if (peerProduct.contains(sourceKey) && containsAny(focusProduct, depKeys)) {
+                return new ProductRuleMatch(false, rule);
+            }
         }
         return null;
     }
 
-    private class ProductRule {
+    private static Boolean containsAny(String productName, List<String> keywords) {
+        for (String keyword : keywords) {
+            if (productName.contains(keyword.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private class ProductRuleMatch {
         Boolean focusIsSource;
         String depType;
         String impact;
         String category;
         String strength;
 
-        ProductRule(Boolean focusIsSource, String depType, String impact, String category, String strength) {
+        ProductRuleMatch(Boolean focusIsSource, Product_Dependency_Rule__mdt rule) {
             this.focusIsSource = focusIsSource;
-            this.depType = depType;
-            this.impact = impact;
-            this.category = category;
-            this.strength = strength;
+            this.depType = rule.Dependency_Type__c;
+            this.impact = rule.Impact_Level__c;
+            this.category = rule.Relationship_Category__c;
+            this.strength = rule.Dependency_Strength__c;
         }
     }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Impact_Level__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Impact Level</label>
+    <length>50</length>
+    <required>true</required>
+    <type>Text</type>
+    <unique>false</unique>
+    <description>Impact level if the source asset fails (e.g., Critical, High)</description>
+</CustomField>

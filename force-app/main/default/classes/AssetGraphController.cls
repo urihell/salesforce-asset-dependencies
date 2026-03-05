@@ -134,14 +134,12 @@ public with sharing class AssetGraphController {
         }
 
         try {
-            for (RecordAlert ra : [
-                SELECT Id, Name, EffectiveDate, ValidUntilDate, WhatId
-                FROM RecordAlert
-                WHERE WhatId IN :assetIds
-                ORDER BY EffectiveDate DESC
-            ]) {
-                if (signalsMap.containsKey(ra.WhatId)) {
-                    AssetSignals sig = signalsMap.get(ra.WhatId);
+            String alertQuery = 'SELECT Id, Name, EffectiveDate, ValidUntilDate, WhatId '
+                + 'FROM RecordAlert WHERE WhatId IN :assetIds ORDER BY EffectiveDate DESC';
+            for (SObject ra : Database.query(alertQuery)) {
+                Id whatId = (Id) ra.get('WhatId');
+                if (signalsMap.containsKey(whatId)) {
+                    AssetSignals sig = signalsMap.get(whatId);
                     sig.activeAlerts++;
                     sig.alertRecords.add(new AlertRecord(ra));
                 }
@@ -593,11 +591,11 @@ public with sharing class AssetGraphController {
         @AuraEnabled public Datetime effectiveDate;
         @AuraEnabled public Datetime validUntilDate;
 
-        public AlertRecord(RecordAlert ra) {
+        public AlertRecord(SObject ra) {
             this.id = ra.Id;
-            this.name = ra.Name;
-            this.effectiveDate = ra.EffectiveDate;
-            this.validUntilDate = ra.ValidUntilDate;
+            this.name = (String) ra.get('Name');
+            this.effectiveDate = (Datetime) ra.get('EffectiveDate');
+            this.validUntilDate = (Datetime) ra.get('ValidUntilDate');
         }
     }
 

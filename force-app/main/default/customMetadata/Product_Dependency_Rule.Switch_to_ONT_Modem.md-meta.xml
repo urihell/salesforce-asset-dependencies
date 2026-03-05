@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Switch to ONT Modem</label>
+    <protected>false</protected>
+    <values>
+        <field>Source_Keyword__c</field>
+        <value xsi:type="xsd:string">switch</value>
+    </values>
+    <values>
+        <field>Dependent_Keyword__c</field>
+        <value xsi:type="xsd:string">ont,modem</value>
+    </values>
+    <values>
+        <field>Dependency_Type__c</field>
+        <value xsi:type="xsd:string">Network Connection</value>
+    </values>
+    <values>
+        <field>Impact_Level__c</field>
+        <value xsi:type="xsd:string">High</value>
+    </values>
+    <values>
+        <field>Relationship_Category__c</field>
+        <value xsi:type="xsd:string">Network</value>
+    </values>
+    <values>
+        <field>Dependency_Strength__c</field>
+        <value xsi:type="xsd:string">Degraded Service</value>
+    </values>
+</CustomMetadata>
