@@ -2,6 +2,8 @@ import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
+import { publish, subscribe, unsubscribe, createMessageContext } from 'lightning/messageService';
+import DEPENDENCY_CHANGED from '@salesforce/messageChannel/Dependency_Changed__c';
 import getAssetDependencies from '@salesforce/apex/AssetDependencyController.getAssetDependencies';
 import searchAssets from '@salesforce/apex/AssetDependencyController.searchAssets';
 import getPicklistValues from '@salesforce/apex/AssetDependencyController.getPicklistValues';
@@ -39,8 +41,23 @@ export default class AssetDependencyVisualizer extends NavigationMixin(Lightning
     impactLevels = [];
 
     _searchDebounceTimer;
+    _messageContext = createMessageContext();
+    _subscription = null;
 
     wiredDependenciesResult;
+
+    connectedCallback() {
+        this._subscription = subscribe(this._messageContext, DEPENDENCY_CHANGED, () => {
+            refreshApex(this.wiredDependenciesResult);
+        });
+    }
+
+    disconnectedCallback() {
+        if (this._subscription) {
+            unsubscribe(this._subscription);
+            this._subscription = null;
+        }
+    }
 
     get filterOptions() {
         return [
@@ -261,6 +278,7 @@ export default class AssetDependencyVisualizer extends NavigationMixin(Lightning
         .then(() => {
             this.showToast('Success', 'Dependency created successfully', 'success');
             this.handleCloseModal();
+            publish(this._messageContext, DEPENDENCY_CHANGED, { recordId: this.recordId });
             return refreshApex(this.wiredDependenciesResult);
         })
         .catch(error => {
@@ -290,6 +308,7 @@ export default class AssetDependencyVisualizer extends NavigationMixin(Lightning
             .then(() => {
                 this.showToast('Success', 'Dependency deleted successfully', 'success');
                 this._pendingDeleteId = null;
+                publish(this._messageContext, DEPENDENCY_CHANGED, { recordId: this.recordId });
                 return refreshApex(this.wiredDependenciesResult);
             })
             .catch(error => {

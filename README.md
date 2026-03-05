@@ -47,14 +47,14 @@ A Lightning Web Component that visualizes operational dependencies between asset
 
 Install the released unlocked package directly into your org — no CLI or source code required.
 
-**Package Version ID:** `04tHo0000015xFsIAI`
+**Package Version ID:** `04tHo0000015xFxIAI`
 
 1. **Click the install link:**
-   [Install Asset Dependency Visualizer](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tHo0000015xFsIAI)
+   [Install Asset Dependency Visualizer](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tHo0000015xFxIAI)
 
 2. **Or use the CLI:**
    ```bash
-   sf package install --package 04tHo0000015xFsIAI --target-org <your-org-alias> --wait 10
+   sf package install --package 04tHo0000015xFxIAI --target-org <your-org-alias> --wait 10
    ```
 
 ### Option B: Deploy from Source

@@ -3,7 +3,7 @@ public with sharing class AssetGraphController {
     /**
      * Get complete graph data for visualization
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static GraphData getGraphData(Id focusAssetId, Integer maxHops) {
         try {
             GraphData graphData = new GraphData();
@@ -230,7 +230,7 @@ public with sharing class AssetGraphController {
     /**
      * Expand node to get additional relationships
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static GraphData expandNode(Id nodeId, Id focusAssetId, Integer hops, String direction) {
         try {
             GraphData graphData = new GraphData();
@@ -305,7 +305,7 @@ public with sharing class AssetGraphController {
     /**
      * Calculate critical path using Dijkstra's algorithm
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static CriticalPathResult getCriticalPath(Id focusAssetId) {
         try {
             CriticalPathResult result = new CriticalPathResult();
@@ -489,7 +489,7 @@ public with sharing class AssetGraphController {
     /**
      * Calculate blast radius (downstream impact)
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static BlastRadiusResult getBlastRadius(Id focusAssetId) {
         BlastRadiusResult result = new BlastRadiusResult();
         result.directlyImpacted = new List<Id>();

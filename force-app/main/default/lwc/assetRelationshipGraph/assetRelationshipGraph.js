@@ -1,6 +1,8 @@
 import { LightningElement, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
+import { publish, subscribe, unsubscribe, createMessageContext } from 'lightning/messageService';
+import DEPENDENCY_CHANGED from '@salesforce/messageChannel/Dependency_Changed__c';
 import getGraphData from '@salesforce/apex/AssetGraphController.getGraphData';
 import getBlastRadius from '@salesforce/apex/AssetGraphController.getBlastRadius';
 import getCriticalPath from '@salesforce/apex/AssetGraphController.getCriticalPath';
@@ -81,9 +83,22 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
     _panStartX = 0;
     _panStartY = 0;
 
+    _messageContext = createMessageContext();
+    _subscription = null;
+
     connectedCallback() {
         this.loadGraphData();
         this.loadBreadcrumbs();
+        this._subscription = subscribe(this._messageContext, DEPENDENCY_CHANGED, () => {
+            this.loadGraphData();
+        });
+    }
+
+    disconnectedCallback() {
+        if (this._subscription) {
+            unsubscribe(this._subscription);
+            this._subscription = null;
+        }
     }
 
     renderedCallback() {
@@ -728,6 +743,7 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
             .then(() => {
                 this.showToast('Success', 'Dependency deleted successfully', 'success');
                 this.selectedEdge = null;
+                publish(this._messageContext, DEPENDENCY_CHANGED, { recordId: this.recordId });
                 this.loadGraphData();
             })
             .catch(error => {
@@ -839,7 +855,8 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
             .then(() => {
                 this.showToast('Success', 'Dependency created successfully', 'success');
                 this.handleCloseCreateModal();
-                this.loadGraphData(); // Reload graph
+                publish(this._messageContext, DEPENDENCY_CHANGED, { recordId: this.recordId });
+                this.loadGraphData();
             })
             .catch(error => {
                 console.error('Error creating dependency:', error);
@@ -954,6 +971,7 @@ export default class AssetRelationshipGraph extends NavigationMixin(LightningEle
                     `Created ${count} dependenc${count === 1 ? 'y' : 'ies'}.`, 'success');
                 this.showDiscoveryModal = false;
                 this.discoveredDependencies = [];
+                publish(this._messageContext, DEPENDENCY_CHANGED, { recordId: this.recordId });
                 this.loadGraphData();
             })
             .catch(error => {

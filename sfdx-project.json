@@ -1,8 +1,8 @@
 {
   "packageDirectories": [
     {
-      "versionName": "ver 0.1",
-      "versionNumber": "0.1.0.NEXT",
+      "versionName": "ver 0.2",
+      "versionNumber": "0.2.0.NEXT",
       "path": "force-app",
       "default": true,
       "package": "Asset Dependency Visualizer",
@@ -16,6 +16,7 @@
   "packageAliases": {
     "Asset Dependency Visualizer": "0HoHo0000000KW4KAM",
     "Asset Dependency Visualizer@0.1.0-1": "04tHo0000015xFnIAI",
-    "Asset Dependency Visualizer@0.1.0-2": "04tHo0000015xFsIAI"
+    "Asset Dependency Visualizer@0.1.0-2": "04tHo0000015xFsIAI",
+    "Asset Dependency Visualizer@0.2.0-1": "04tHo0000015xFxIAI"
   }
 }
